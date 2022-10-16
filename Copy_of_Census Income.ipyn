@@ -1,0 +1,667 @@
+{
+  "nbformat": 4,
+  "nbformat_minor": 0,
+  "metadata": {
+    "colab": {
+      "provenance": [],
+      "toc_visible": true,
+      "authorship_tag": "ABX9TyMe/6u1fAH6mquHIXqAnzm8",
+      "include_colab_link": true
+    },
+    "kernelspec": {
+      "name": "python3",
+      "display_name": "Python 3"
+    },
+    "language_info": {
+      "name": "python"
+    }
+  },
+  "cells": [
+    {
+      "cell_type": "markdown",
+      "metadata": {
+        "id": "view-in-github",
+        "colab_type": "text"
+      },
+      "source": [
+        "<a href=\"https://colab.research.google.com/github/namratagawade/demo-git-hub2/blob/main/Copy_of_Census%20Income.ipyn\" target=\"_parent\"><img src=\"https://colab.research.google.com/assets/colab-badge.svg\" alt=\"Open In Colab\"/></a>"
+      ]
+    },
+    {
+      "cell_type": "code",
+      "execution_count": null,
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/",
+          "height": 148
+        },
+        "id": "keS3jKdmA79X",
+        "outputId": "bc37efb3-27a3-4cfd-c98a-12644a399719"
+      },
+      "outputs": [
+        {
+          "output_type": "error",
+          "ename": "SyntaxError",
+          "evalue": "ignored",
+          "traceback": [
+            "\u001b[0;36m  File \u001b[0;32m\"<ipython-input-23-b5da9cbb02f6>\"\u001b[0;36m, line \u001b[0;32m3\u001b[0m\n\u001b[0;31m    DATA_DIR = Path(\"C:\\Users\\hpnam\\OneDrive\\Desktop\\PYTHON PROJECT\\Census Income\\adult.csv\\adult.csv\")\u001b[0m\n\u001b[0m                   ^\u001b[0m\n\u001b[0;31mSyntaxError\u001b[0m\u001b[0;31m:\u001b[0m (unicode error) 'unicodeescape' codec can't decode bytes in position 2-3: truncated \\UXXXXXXXX escape\n"
+          ]
+        }
+      ],
+      "source": [
+        "from pathlib import Path\n",
+        "\n",
+        "DATA_DIR = Path(\"/kaggle/input\")\n",
+        "if (DATA_DIR / \"ucfai-core-fa19-regression\").exists():\n",
+        "    DATA_DIR /= \"ucfai-core-fa19-regression\"\n",
+        "elif DATA_DIR.exists():\n",
+        "    # no-op to keep the proper data path for Kaggle\n",
+        "    pass\n",
+        "else:\n",
+        "    # You'll need to download the data from Kaggle and place it in the `data/`\n",
+        "    #   directory beside this notebook.\n",
+        "    # The data should be here: https://kaggle.com/c/ucfai-core-fa19-regression/data\n",
+        "    DATA_DIR = Path(\"data\")\n",
+        "    "
+      ]
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "# import some important stuff\n",
+        "import matplotlib.pyplot as plt\n",
+        "import numpy as np\n",
+        "import pandas as pd\n",
+        "import scipy.stats as st\n",
+        "from sklearn import datasets, linear_model"
+      ],
+      "metadata": {
+        "id": "Tigi-ePAB8tQ"
+      },
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "# Get some data \n",
+        "x = np.array([0, 1, 2, 3, 4, 5, 6, 7, 8, 9]) \n",
+        "y = np.array([1, 3, 2, 5, 7, 8, 8, 9, 10, 12])\n",
+        "\n",
+        "# Let's plot the data to see what it looks like\n",
+        "plt.scatter(x, y, color = \"black\") \n",
+        "plt.show()\n"
+      ],
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/",
+          "height": 265
+        },
+        "id": "DaP54PooB_Mj",
+        "outputId": "0f4fd672-0e86-404b-d9b9-9db3e8f67956"
+      },
+      "execution_count": null,
+      "outputs": [
+        {
+          "output_type": "display_data",
+          "data": {
+            "text/plain": [
+              "<Figure size 432x288 with 1 Axes>"
+            ],
+            "image/png": "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\n"
+          },
+          "metadata": {
+            "needs_background": "light"
+          }
+        }
+      ]
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "# calculating the coefficients\n",
+        "\n",
+        "# number of observations/points \n",
+        "n = np.size(x) \n",
+        "\n",
+        "# mean of x and y vector \n",
+        "m_x, m_y = np.mean(x), np.mean(y) \n",
+        "\n",
+        "# calculating cross-deviation and deviation about x \n",
+        "SS_xy = np.sum(y*x - n*m_y*m_x) \n",
+        "SS_xx = np.sum(x*x - n*m_x*m_x) \n",
+        "\n",
+        "# calculating regression coefficients \n",
+        "b_1 = SS_xy / SS_xx \n",
+        "b_0 = m_y - b_1*m_x\n",
+        "#var to hold the coefficients\n",
+        "b = (b_0, b_1)\n",
+        "\n",
+        "#print out the estimated coefficients\n",
+        "print(\"Estimated coefficients:\\nb_0 = {} \\nb_1 = {}\".format(b[0], b[1])) \n"
+      ],
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "6wCbzTilCHzO",
+        "outputId": "41a21849-cfd7-42c1-ce05-5c6015f4766a"
+      },
+      "execution_count": null,
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stdout",
+          "text": [
+            "Estimated coefficients:\n",
+            "b_0 = -0.05862068965517242 \n",
+            "b_1 = 1.457471264367816\n"
+          ]
+        }
+      ]
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "# Sklearn learn require this shape\n",
+        "x = x.reshape(-1,1)\n",
+        "y = y.reshape(-1,1)\n",
+        "\n",
+        "# making the model\n",
+        "regress = linear_model.LinearRegression()\n",
+        "regress.fit(x, y)"
+      ],
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "XCc6maM8CYx-",
+        "outputId": "89602642-966b-4074-d2f4-e79dd500620b"
+      },
+      "execution_count": null,
+      "outputs": [
+        {
+          "output_type": "execute_result",
+          "data": {
+            "text/plain": [
+              "LinearRegression()"
+            ]
+          },
+          "metadata": {},
+          "execution_count": 5
+        }
+      ]
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "# plotting the actual points as scatter plot \n",
+        "plt.scatter(x, y, color = \"black\", \n",
+        "           marker = \"o\", s = 30) \n",
+        "\n",
+        "# predicted response vector \n",
+        "y_pred = b[0] + b[1]*x \n",
+        "\n",
+        "# plotting the regression line \n",
+        "plt.plot(x, y_pred, color = \"blue\") \n",
+        "\n",
+        "# putting labels \n",
+        "plt.xlabel('x') \n",
+        "plt.ylabel('y') \n",
+        "\n",
+        "# function to show plot \n",
+        "plt.show()\n"
+      ],
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/",
+          "height": 279
+        },
+        "id": "SsFkzepxCfiu",
+        "outputId": "060310d0-f9ff-4a07-dec1-28d0a7a6fb16"
+      },
+      "execution_count": null,
+      "outputs": [
+        {
+          "output_type": "display_data",
+          "data": {
+            "text/plain": [
+              "<Figure size 432x288 with 1 Axes>"
+            ],
+            "image/png": "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\n"
+          },
+          "metadata": {
+            "needs_background": "light"
+          }
+        }
+      ]
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "# here we can try out any data point\n",
+        "print(regress.predict([[6]]))"
+      ],
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "8dlsCSx_CvsW",
+        "outputId": "88839094-c8dc-461f-e598-e97c15292dd1"
+      },
+      "execution_count": null,
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stdout",
+          "text": [
+            "[[8.25454545]]\n"
+          ]
+        }
+      ]
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "housing_data =  pd.adult.csv(DATA_DIR / \"house-prices-advanced-regression-techniques/train.csv\", delimiter=\"\\t\") \n",
+        "\n",
+        "# Mean Sales price \n",
+        "mean_price = np.mean(housing_data[\"SalePrice\"])\n",
+        "print(\"Mean Price : \" + str(mean_price))\n",
+        "\n",
+        "# Variance of the Sales Price \n",
+        "var_price = np.var(housing_data[\"SalePrice\"], ddof=1)\n",
+        "print(\"Variance of Sales Price : \" + str(var_price))\n",
+        "\n",
+        "# Median of Sales Price \n",
+        "median_price = np.median(housing_data[\"SalePrice\"])\n",
+        "print(\"Median Sales Price : \" + str(median_price))\n",
+        "\n",
+        "# Skew of Sales Price \n",
+        "skew_price = st.skew(housing_data[\"SalePrice\"])\n",
+        "print(\"Skew of Sales Price : \" + str(skew_price))\n"
+      ],
+      "metadata": {
+        "id": "AbX25juFC4C5"
+      },
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "plt.boxplot(housing_data[\"SalePrice\"])\n",
+        "plt.ylabel(\"Sales Price\")\n",
+        "plt.show()"
+      ],
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/",
+          "height": 201
+        },
+        "id": "_Mi7y40DHDgD",
+        "outputId": "ab6f4b03-d4c7-4dee-99db-b8455e69fcc0"
+      },
+      "execution_count": null,
+      "outputs": [
+        {
+          "output_type": "error",
+          "ename": "NameError",
+          "evalue": "ignored",
+          "traceback": [
+            "\u001b[0;31m---------------------------------------------------------------------------\u001b[0m",
+            "\u001b[0;31mNameError\u001b[0m                                 Traceback (most recent call last)",
+            "\u001b[0;32m<ipython-input-10-51ee0b644c57>\u001b[0m in \u001b[0;36m<module>\u001b[0;34m\u001b[0m\n\u001b[0;32m----> 1\u001b[0;31m \u001b[0mplt\u001b[0m\u001b[0;34m.\u001b[0m\u001b[0mboxplot\u001b[0m\u001b[0;34m(\u001b[0m\u001b[0mhousing_data\u001b[0m\u001b[0;34m[\u001b[0m\u001b[0;34m\"SalePrice\"\u001b[0m\u001b[0;34m]\u001b[0m\u001b[0;34m)\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n\u001b[0m\u001b[1;32m      2\u001b[0m \u001b[0mplt\u001b[0m\u001b[0;34m.\u001b[0m\u001b[0mylabel\u001b[0m\u001b[0;34m(\u001b[0m\u001b[0;34m\"Sales Price\"\u001b[0m\u001b[0;34m)\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n\u001b[1;32m      3\u001b[0m \u001b[0mplt\u001b[0m\u001b[0;34m.\u001b[0m\u001b[0mshow\u001b[0m\u001b[0;34m(\u001b[0m\u001b[0;34m)\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n",
+            "\u001b[0;31mNameError\u001b[0m: name 'housing_data' is not defined"
+          ]
+        }
+      ]
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "plt.scatter(housing_data[\"GrLivArea\"], housing_data[\"SalePrice\"])\n",
+        "plt.ylabel(\"Sales Price\")\n",
+        "plt.show()"
+      ],
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/",
+          "height": 201
+        },
+        "id": "NwM8w-B-Hfa4",
+        "outputId": "21d67ee8-4318-4bb3-c390-54103dadc77a"
+      },
+      "execution_count": null,
+      "outputs": [
+        {
+          "output_type": "error",
+          "ename": "NameError",
+          "evalue": "ignored",
+          "traceback": [
+            "\u001b[0;31m---------------------------------------------------------------------------\u001b[0m",
+            "\u001b[0;31mNameError\u001b[0m                                 Traceback (most recent call last)",
+            "\u001b[0;32m<ipython-input-11-d947fb772755>\u001b[0m in \u001b[0;36m<module>\u001b[0;34m\u001b[0m\n\u001b[0;32m----> 1\u001b[0;31m \u001b[0mplt\u001b[0m\u001b[0;34m.\u001b[0m\u001b[0mscatter\u001b[0m\u001b[0;34m(\u001b[0m\u001b[0mhousing_data\u001b[0m\u001b[0;34m[\u001b[0m\u001b[0;34m\"GrLivArea\"\u001b[0m\u001b[0;34m]\u001b[0m\u001b[0;34m,\u001b[0m \u001b[0mhousing_data\u001b[0m\u001b[0;34m[\u001b[0m\u001b[0;34m\"SalePrice\"\u001b[0m\u001b[0;34m]\u001b[0m\u001b[0;34m)\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n\u001b[0m\u001b[1;32m      2\u001b[0m \u001b[0mplt\u001b[0m\u001b[0;34m.\u001b[0m\u001b[0mylabel\u001b[0m\u001b[0;34m(\u001b[0m\u001b[0;34m\"Sales Price\"\u001b[0m\u001b[0;34m)\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n\u001b[1;32m      3\u001b[0m \u001b[0mplt\u001b[0m\u001b[0;34m.\u001b[0m\u001b[0mshow\u001b[0m\u001b[0;34m(\u001b[0m\u001b[0;34m)\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n",
+            "\u001b[0;31mNameError\u001b[0m: name 'housing_data' is not defined"
+          ]
+        }
+      ]
+    },
+    {
+      "cell_type": "markdown",
+      "source": [
+        "# New Section"
+      ],
+      "metadata": {
+        "id": "VGMIIvlDDbE7"
+      }
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "# we need to reshape the array to make the sklearn gods happy\n",
+        "area_reshape = housing_data[\"GrLivArea\"].values.reshape(-1,1)\n",
+        "price_reshape = housing_data[\"SalePrice\"].values.reshape(-1,1)\n",
+        "\n",
+        "# Generate the Model\n",
+        "model = linear_model.LinearRegression(fit_intercept=True)\n",
+        "model.fit(area_reshape, price_reshape)\n",
+        "price_prediction = model.predict(area_reshape)\n",
+        "\n",
+        "# plotting the actual points as scatter plot \n",
+        "plt.scatter(area_reshape, price_reshape) \n",
+        "\n",
+        "# plotting the regression line \n",
+        "plt.plot(area_reshape, price_prediction, color = \"red\") \n",
+        "\n",
+        "# putting labels \n",
+        "plt.xlabel('Above Ground Living Area') \n",
+        "plt.ylabel('Sales Price') \n",
+        "# function to show plot \n",
+        "plt.show()\n"
+      ],
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/",
+          "height": 235
+        },
+        "id": "LhgWqG8OHkfE",
+        "outputId": "624afb94-3540-4c1d-ccd9-be541c4da83a"
+      },
+      "execution_count": null,
+      "outputs": [
+        {
+          "output_type": "error",
+          "ename": "NameError",
+          "evalue": "ignored",
+          "traceback": [
+            "\u001b[0;31m---------------------------------------------------------------------------\u001b[0m",
+            "\u001b[0;31mNameError\u001b[0m                                 Traceback (most recent call last)",
+            "\u001b[0;32m<ipython-input-12-d1f4e446ffa1>\u001b[0m in \u001b[0;36m<module>\u001b[0;34m\u001b[0m\n\u001b[1;32m      1\u001b[0m \u001b[0;31m# we need to reshape the array to make the sklearn gods happy\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n\u001b[0;32m----> 2\u001b[0;31m \u001b[0marea_reshape\u001b[0m \u001b[0;34m=\u001b[0m \u001b[0mhousing_data\u001b[0m\u001b[0;34m[\u001b[0m\u001b[0;34m\"GrLivArea\"\u001b[0m\u001b[0;34m]\u001b[0m\u001b[0;34m.\u001b[0m\u001b[0mvalues\u001b[0m\u001b[0;34m.\u001b[0m\u001b[0mreshape\u001b[0m\u001b[0;34m(\u001b[0m\u001b[0;34m-\u001b[0m\u001b[0;36m1\u001b[0m\u001b[0;34m,\u001b[0m\u001b[0;36m1\u001b[0m\u001b[0;34m)\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n\u001b[0m\u001b[1;32m      3\u001b[0m \u001b[0mprice_reshape\u001b[0m \u001b[0;34m=\u001b[0m \u001b[0mhousing_data\u001b[0m\u001b[0;34m[\u001b[0m\u001b[0;34m\"SalePrice\"\u001b[0m\u001b[0;34m]\u001b[0m\u001b[0;34m.\u001b[0m\u001b[0mvalues\u001b[0m\u001b[0;34m.\u001b[0m\u001b[0mreshape\u001b[0m\u001b[0;34m(\u001b[0m\u001b[0;34m-\u001b[0m\u001b[0;36m1\u001b[0m\u001b[0;34m,\u001b[0m\u001b[0;36m1\u001b[0m\u001b[0;34m)\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n\u001b[1;32m      4\u001b[0m \u001b[0;34m\u001b[0m\u001b[0m\n\u001b[1;32m      5\u001b[0m \u001b[0;31m# Generate the Model\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n",
+            "\u001b[0;31mNameError\u001b[0m: name 'housing_data' is not defined"
+          ]
+        }
+      ]
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "# we're going to need a different model, so let's import it\n",
+        "from sklearn.linear_model import LogisticRegression\n",
+        "from sklearn.model_selection import train_test_split\n"
+      ],
+      "metadata": {
+        "id": "PYofB5e3HwUt"
+      },
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "# read_csv allow us to easily import a whole dataset\n",
+        "data = pd.read_csv(\n",
+        "    DATA_DIR / \"adult-census-income/adult.csv\",\n",
+        "    names=[\"age\",\"workclass\",\"fnlwgt\",\"education\",\"education-num\",\"marital-status\",\"occupation\",\"relationship\",\"race\",\"sex\",\"capital-gain\",\"capital-loss\",\"hours-per-week\",\"native-country\",\"income\"]\n",
+        ")\n",
+        "\n",
+        "# this tells us whats in it \n",
+        "print(data.info())"
+      ],
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/",
+          "height": 433
+        },
+        "id": "h5L7j1JRH3Tg",
+        "outputId": "dcb2bb4c-a70a-4bec-e138-adca06a2e664"
+      },
+      "execution_count": null,
+      "outputs": [
+        {
+          "output_type": "error",
+          "ename": "FileNotFoundError",
+          "evalue": "ignored",
+          "traceback": [
+            "\u001b[0;31m---------------------------------------------------------------------------\u001b[0m",
+            "\u001b[0;31mFileNotFoundError\u001b[0m                         Traceback (most recent call last)",
+            "\u001b[0;32m<ipython-input-15-bba91902b9ca>\u001b[0m in \u001b[0;36m<module>\u001b[0;34m\u001b[0m\n\u001b[1;32m      2\u001b[0m data = pd.read_csv(\n\u001b[1;32m      3\u001b[0m     \u001b[0mDATA_DIR\u001b[0m \u001b[0;34m/\u001b[0m \u001b[0;34m\"adult-census-income/adult.csv\"\u001b[0m\u001b[0;34m,\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n\u001b[0;32m----> 4\u001b[0;31m     \u001b[0mnames\u001b[0m\u001b[0;34m=\u001b[0m\u001b[0;34m[\u001b[0m\u001b[0;34m\"age\"\u001b[0m\u001b[0;34m,\u001b[0m\u001b[0;34m\"workclass\"\u001b[0m\u001b[0;34m,\u001b[0m\u001b[0;34m\"fnlwgt\"\u001b[0m\u001b[0;34m,\u001b[0m\u001b[0;34m\"education\"\u001b[0m\u001b[0;34m,\u001b[0m\u001b[0;34m\"education-num\"\u001b[0m\u001b[0;34m,\u001b[0m\u001b[0;34m\"marital-status\"\u001b[0m\u001b[0;34m,\u001b[0m\u001b[0;34m\"occupation\"\u001b[0m\u001b[0;34m,\u001b[0m\u001b[0;34m\"relationship\"\u001b[0m\u001b[0;34m,\u001b[0m\u001b[0;34m\"race\"\u001b[0m\u001b[0;34m,\u001b[0m\u001b[0;34m\"sex\"\u001b[0m\u001b[0;34m,\u001b[0m\u001b[0;34m\"capital-gain\"\u001b[0m\u001b[0;34m,\u001b[0m\u001b[0;34m\"capital-loss\"\u001b[0m\u001b[0;34m,\u001b[0m\u001b[0;34m\"hours-per-week\"\u001b[0m\u001b[0;34m,\u001b[0m\u001b[0;34m\"native-country\"\u001b[0m\u001b[0;34m,\u001b[0m\u001b[0;34m\"income\"\u001b[0m\u001b[0;34m]\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n\u001b[0m\u001b[1;32m      5\u001b[0m )\n\u001b[1;32m      6\u001b[0m \u001b[0;34m\u001b[0m\u001b[0m\n",
+            "\u001b[0;32m/usr/local/lib/python3.7/dist-packages/pandas/util/_decorators.py\u001b[0m in \u001b[0;36mwrapper\u001b[0;34m(*args, **kwargs)\u001b[0m\n\u001b[1;32m    309\u001b[0m                     \u001b[0mstacklevel\u001b[0m\u001b[0;34m=\u001b[0m\u001b[0mstacklevel\u001b[0m\u001b[0;34m,\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n\u001b[1;32m    310\u001b[0m                 )\n\u001b[0;32m--> 311\u001b[0;31m             \u001b[0;32mreturn\u001b[0m \u001b[0mfunc\u001b[0m\u001b[0;34m(\u001b[0m\u001b[0;34m*\u001b[0m\u001b[0margs\u001b[0m\u001b[0;34m,\u001b[0m \u001b[0;34m**\u001b[0m\u001b[0mkwargs\u001b[0m\u001b[0;34m)\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n\u001b[0m\u001b[1;32m    312\u001b[0m \u001b[0;34m\u001b[0m\u001b[0m\n\u001b[1;32m    313\u001b[0m         \u001b[0;32mreturn\u001b[0m \u001b[0mwrapper\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n",
+            "\u001b[0;32m/usr/local/lib/python3.7/dist-packages/pandas/io/parsers/readers.py\u001b[0m in \u001b[0;36mread_csv\u001b[0;34m(filepath_or_buffer, sep, delimiter, header, names, index_col, usecols, squeeze, prefix, mangle_dupe_cols, dtype, engine, converters, true_values, false_values, skipinitialspace, skiprows, skipfooter, nrows, na_values, keep_default_na, na_filter, verbose, skip_blank_lines, parse_dates, infer_datetime_format, keep_date_col, date_parser, dayfirst, cache_dates, iterator, chunksize, compression, thousands, decimal, lineterminator, quotechar, quoting, doublequote, escapechar, comment, encoding, encoding_errors, dialect, error_bad_lines, warn_bad_lines, on_bad_lines, delim_whitespace, low_memory, memory_map, float_precision, storage_options)\u001b[0m\n\u001b[1;32m    584\u001b[0m     \u001b[0mkwds\u001b[0m\u001b[0;34m.\u001b[0m\u001b[0mupdate\u001b[0m\u001b[0;34m(\u001b[0m\u001b[0mkwds_defaults\u001b[0m\u001b[0;34m)\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n\u001b[1;32m    585\u001b[0m \u001b[0;34m\u001b[0m\u001b[0m\n\u001b[0;32m--> 586\u001b[0;31m     \u001b[0;32mreturn\u001b[0m \u001b[0m_read\u001b[0m\u001b[0;34m(\u001b[0m\u001b[0mfilepath_or_buffer\u001b[0m\u001b[0;34m,\u001b[0m \u001b[0mkwds\u001b[0m\u001b[0;34m)\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n\u001b[0m\u001b[1;32m    587\u001b[0m \u001b[0;34m\u001b[0m\u001b[0m\n\u001b[1;32m    588\u001b[0m \u001b[0;34m\u001b[0m\u001b[0m\n",
+            "\u001b[0;32m/usr/local/lib/python3.7/dist-packages/pandas/io/parsers/readers.py\u001b[0m in \u001b[0;36m_read\u001b[0;34m(filepath_or_buffer, kwds)\u001b[0m\n\u001b[1;32m    480\u001b[0m \u001b[0;34m\u001b[0m\u001b[0m\n\u001b[1;32m    481\u001b[0m     \u001b[0;31m# Create the parser.\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n\u001b[0;32m--> 482\u001b[0;31m     \u001b[0mparser\u001b[0m \u001b[0;34m=\u001b[0m \u001b[0mTextFileReader\u001b[0m\u001b[0;34m(\u001b[0m\u001b[0mfilepath_or_buffer\u001b[0m\u001b[0;34m,\u001b[0m \u001b[0;34m**\u001b[0m\u001b[0mkwds\u001b[0m\u001b[0;34m)\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n\u001b[0m\u001b[1;32m    483\u001b[0m \u001b[0;34m\u001b[0m\u001b[0m\n\u001b[1;32m    484\u001b[0m     \u001b[0;32mif\u001b[0m \u001b[0mchunksize\u001b[0m \u001b[0;32mor\u001b[0m \u001b[0miterator\u001b[0m\u001b[0;34m:\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n",
+            "\u001b[0;32m/usr/local/lib/python3.7/dist-packages/pandas/io/parsers/readers.py\u001b[0m in \u001b[0;36m__init__\u001b[0;34m(self, f, engine, **kwds)\u001b[0m\n\u001b[1;32m    809\u001b[0m             \u001b[0mself\u001b[0m\u001b[0;34m.\u001b[0m\u001b[0moptions\u001b[0m\u001b[0;34m[\u001b[0m\u001b[0;34m\"has_index_names\"\u001b[0m\u001b[0;34m]\u001b[0m \u001b[0;34m=\u001b[0m \u001b[0mkwds\u001b[0m\u001b[0;34m[\u001b[0m\u001b[0;34m\"has_index_names\"\u001b[0m\u001b[0;34m]\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n\u001b[1;32m    810\u001b[0m \u001b[0;34m\u001b[0m\u001b[0m\n\u001b[0;32m--> 811\u001b[0;31m         \u001b[0mself\u001b[0m\u001b[0;34m.\u001b[0m\u001b[0m_engine\u001b[0m \u001b[0;34m=\u001b[0m \u001b[0mself\u001b[0m\u001b[0;34m.\u001b[0m\u001b[0m_make_engine\u001b[0m\u001b[0;34m(\u001b[0m\u001b[0mself\u001b[0m\u001b[0;34m.\u001b[0m\u001b[0mengine\u001b[0m\u001b[0;34m)\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n\u001b[0m\u001b[1;32m    812\u001b[0m \u001b[0;34m\u001b[0m\u001b[0m\n\u001b[1;32m    813\u001b[0m     \u001b[0;32mdef\u001b[0m \u001b[0mclose\u001b[0m\u001b[0;34m(\u001b[0m\u001b[0mself\u001b[0m\u001b[0;34m)\u001b[0m\u001b[0;34m:\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n",
+            "\u001b[0;32m/usr/local/lib/python3.7/dist-packages/pandas/io/parsers/readers.py\u001b[0m in \u001b[0;36m_make_engine\u001b[0;34m(self, engine)\u001b[0m\n\u001b[1;32m   1038\u001b[0m             )\n\u001b[1;32m   1039\u001b[0m         \u001b[0;31m# error: Too many arguments for \"ParserBase\"\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n\u001b[0;32m-> 1040\u001b[0;31m         \u001b[0;32mreturn\u001b[0m \u001b[0mmapping\u001b[0m\u001b[0;34m[\u001b[0m\u001b[0mengine\u001b[0m\u001b[0;34m]\u001b[0m\u001b[0;34m(\u001b[0m\u001b[0mself\u001b[0m\u001b[0;34m.\u001b[0m\u001b[0mf\u001b[0m\u001b[0;34m,\u001b[0m \u001b[0;34m**\u001b[0m\u001b[0mself\u001b[0m\u001b[0;34m.\u001b[0m\u001b[0moptions\u001b[0m\u001b[0;34m)\u001b[0m  \u001b[0;31m# type: ignore[call-arg]\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n\u001b[0m\u001b[1;32m   1041\u001b[0m \u001b[0;34m\u001b[0m\u001b[0m\n\u001b[1;32m   1042\u001b[0m     \u001b[0;32mdef\u001b[0m \u001b[0m_failover_to_python\u001b[0m\u001b[0;34m(\u001b[0m\u001b[0mself\u001b[0m\u001b[0;34m)\u001b[0m\u001b[0;34m:\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n",
+            "\u001b[0;32m/usr/local/lib/python3.7/dist-packages/pandas/io/parsers/c_parser_wrapper.py\u001b[0m in \u001b[0;36m__init__\u001b[0;34m(self, src, **kwds)\u001b[0m\n\u001b[1;32m     49\u001b[0m \u001b[0;34m\u001b[0m\u001b[0m\n\u001b[1;32m     50\u001b[0m         \u001b[0;31m# open handles\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n\u001b[0;32m---> 51\u001b[0;31m         \u001b[0mself\u001b[0m\u001b[0;34m.\u001b[0m\u001b[0m_open_handles\u001b[0m\u001b[0;34m(\u001b[0m\u001b[0msrc\u001b[0m\u001b[0;34m,\u001b[0m \u001b[0mkwds\u001b[0m\u001b[0;34m)\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n\u001b[0m\u001b[1;32m     52\u001b[0m         \u001b[0;32massert\u001b[0m \u001b[0mself\u001b[0m\u001b[0;34m.\u001b[0m\u001b[0mhandles\u001b[0m \u001b[0;32mis\u001b[0m \u001b[0;32mnot\u001b[0m \u001b[0;32mNone\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n\u001b[1;32m     53\u001b[0m \u001b[0;34m\u001b[0m\u001b[0m\n",
+            "\u001b[0;32m/usr/local/lib/python3.7/dist-packages/pandas/io/parsers/base_parser.py\u001b[0m in \u001b[0;36m_open_handles\u001b[0;34m(self, src, kwds)\u001b[0m\n\u001b[1;32m    227\u001b[0m             \u001b[0mmemory_map\u001b[0m\u001b[0;34m=\u001b[0m\u001b[0mkwds\u001b[0m\u001b[0;34m.\u001b[0m\u001b[0mget\u001b[0m\u001b[0;34m(\u001b[0m\u001b[0;34m\"memory_map\"\u001b[0m\u001b[0;34m,\u001b[0m \u001b[0;32mFalse\u001b[0m\u001b[0;34m)\u001b[0m\u001b[0;34m,\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n\u001b[1;32m    228\u001b[0m             \u001b[0mstorage_options\u001b[0m\u001b[0;34m=\u001b[0m\u001b[0mkwds\u001b[0m\u001b[0;34m.\u001b[0m\u001b[0mget\u001b[0m\u001b[0;34m(\u001b[0m\u001b[0;34m\"storage_options\"\u001b[0m\u001b[0;34m,\u001b[0m \u001b[0;32mNone\u001b[0m\u001b[0;34m)\u001b[0m\u001b[0;34m,\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n\u001b[0;32m--> 229\u001b[0;31m             \u001b[0merrors\u001b[0m\u001b[0;34m=\u001b[0m\u001b[0mkwds\u001b[0m\u001b[0;34m.\u001b[0m\u001b[0mget\u001b[0m\u001b[0;34m(\u001b[0m\u001b[0;34m\"encoding_errors\"\u001b[0m\u001b[0;34m,\u001b[0m \u001b[0;34m\"strict\"\u001b[0m\u001b[0;34m)\u001b[0m\u001b[0;34m,\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n\u001b[0m\u001b[1;32m    230\u001b[0m         )\n\u001b[1;32m    231\u001b[0m \u001b[0;34m\u001b[0m\u001b[0m\n",
+            "\u001b[0;32m/usr/local/lib/python3.7/dist-packages/pandas/io/common.py\u001b[0m in \u001b[0;36mget_handle\u001b[0;34m(path_or_buf, mode, encoding, compression, memory_map, is_text, errors, storage_options)\u001b[0m\n\u001b[1;32m    705\u001b[0m                 \u001b[0mencoding\u001b[0m\u001b[0;34m=\u001b[0m\u001b[0mioargs\u001b[0m\u001b[0;34m.\u001b[0m\u001b[0mencoding\u001b[0m\u001b[0;34m,\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n\u001b[1;32m    706\u001b[0m                 \u001b[0merrors\u001b[0m\u001b[0;34m=\u001b[0m\u001b[0merrors\u001b[0m\u001b[0;34m,\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n\u001b[0;32m--> 707\u001b[0;31m                 \u001b[0mnewline\u001b[0m\u001b[0;34m=\u001b[0m\u001b[0;34m\"\"\u001b[0m\u001b[0;34m,\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n\u001b[0m\u001b[1;32m    708\u001b[0m             )\n\u001b[1;32m    709\u001b[0m         \u001b[0;32melse\u001b[0m\u001b[0;34m:\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n",
+            "\u001b[0;31mFileNotFoundError\u001b[0m: [Errno 2] No such file or directory: 'data/adult-census-income/adult.csv'"
+          ]
+        }
+      ]
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "# data.head() gives us some the the first 5 rows of the data\n",
+        "data.head()"
+      ],
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/",
+          "height": 183
+        },
+        "id": "GpCwZdfJIs0R",
+        "outputId": "e00632b6-2b79-4289-a16a-0c5ef493933b"
+      },
+      "execution_count": null,
+      "outputs": [
+        {
+          "output_type": "error",
+          "ename": "NameError",
+          "evalue": "ignored",
+          "traceback": [
+            "\u001b[0;31m---------------------------------------------------------------------------\u001b[0m",
+            "\u001b[0;31mNameError\u001b[0m                                 Traceback (most recent call last)",
+            "\u001b[0;32m<ipython-input-16-ffe4e0cb16a1>\u001b[0m in \u001b[0;36m<module>\u001b[0;34m\u001b[0m\n\u001b[1;32m      1\u001b[0m \u001b[0;31m# data.head() gives us some the the first 5 rows of the data\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n\u001b[0;32m----> 2\u001b[0;31m \u001b[0mdata\u001b[0m\u001b[0;34m.\u001b[0m\u001b[0mhead\u001b[0m\u001b[0;34m(\u001b[0m\u001b[0;34m)\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n\u001b[0m",
+            "\u001b[0;31mNameError\u001b[0m: name 'data' is not defined"
+          ]
+        }
+      ]
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "# this is the function that give us some quick info about continous data in the dataset\n",
+        "data.describe()"
+      ],
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/",
+          "height": 183
+        },
+        "id": "2QvkZiAMI4fy",
+        "outputId": "7b4cbba5-e541-4c71-9d38-e26098fdf093"
+      },
+      "execution_count": null,
+      "outputs": [
+        {
+          "output_type": "error",
+          "ename": "NameError",
+          "evalue": "ignored",
+          "traceback": [
+            "\u001b[0;31m---------------------------------------------------------------------------\u001b[0m",
+            "\u001b[0;31mNameError\u001b[0m                                 Traceback (most recent call last)",
+            "\u001b[0;32m<ipython-input-17-15fa294e37d9>\u001b[0m in \u001b[0;36m<module>\u001b[0;34m\u001b[0m\n\u001b[1;32m      1\u001b[0m \u001b[0;31m# this is the function that give us some quick info about continous data in the dataset\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n\u001b[0;32m----> 2\u001b[0;31m \u001b[0mdata\u001b[0m\u001b[0;34m.\u001b[0m\u001b[0mdescribe\u001b[0m\u001b[0;34m(\u001b[0m\u001b[0;34m)\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n\u001b[0m",
+            "\u001b[0;31mNameError\u001b[0m: name 'data' is not defined"
+          ]
+        }
+      ]
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "# put the name of the parameter you want to test\n",
+        "# YOUR CODE HERE\n",
+        "raise NotImplementedError()"
+      ],
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/",
+          "height": 201
+        },
+        "id": "iCHdMLrpI_Gm",
+        "outputId": "5a126464-4a77-40c7-de2e-1e531d29f672"
+      },
+      "execution_count": null,
+      "outputs": [
+        {
+          "output_type": "error",
+          "ename": "NotImplementedError",
+          "evalue": "ignored",
+          "traceback": [
+            "\u001b[0;31m---------------------------------------------------------------------------\u001b[0m",
+            "\u001b[0;31mNotImplementedError\u001b[0m                       Traceback (most recent call last)",
+            "\u001b[0;32m<ipython-input-18-f3a789982981>\u001b[0m in \u001b[0;36m<module>\u001b[0;34m\u001b[0m\n\u001b[1;32m      1\u001b[0m \u001b[0;31m# put the name of the parameter you want to test\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n\u001b[1;32m      2\u001b[0m \u001b[0;31m# YOUR CODE HERE\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n\u001b[0;32m----> 3\u001b[0;31m \u001b[0;32mraise\u001b[0m \u001b[0mNotImplementedError\u001b[0m\u001b[0;34m(\u001b[0m\u001b[0;34m)\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n\u001b[0m",
+            "\u001b[0;31mNotImplementedError\u001b[0m: "
+          ]
+        }
+      ]
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "# but before we make our model, we need to modify our data a bit\n",
+        "\n",
+        "# little baby helper function\n",
+        "def incomeFixer(x):\n",
+        "    if x == \" <=50K\":\n",
+        "        return 0\n",
+        "    else:\n",
+        "        return 1\n",
+        "\n",
+        "# change the income data into 0's and 1's\n",
+        "data[\"income\"] = data.apply(lambda row: incomeFixer(row['income']), axis=1)\n",
+        "\n",
+        "# get the data we are going to make the model with \n",
+        "x = np.array(data[test])\n",
+        "y = np.array(data[\"income\"])\n",
+        "\n",
+        "# again, lets make the scikitlearn gods happy\n",
+        "x = x.reshape(-1,1)\n",
+        "# Making the test-train split\n",
+        "splits = train_test_split(x ,y ,test_size=0.25, random_state=42)\n",
+        "x_train, x_test, y_train, y_test = splits"
+      ],
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/",
+          "height": 235
+        },
+        "id": "EiYuaw28JD_3",
+        "outputId": "717838fa-b2ae-4bb9-8d38-45655c3ed8f5"
+      },
+      "execution_count": null,
+      "outputs": [
+        {
+          "output_type": "error",
+          "ename": "NameError",
+          "evalue": "ignored",
+          "traceback": [
+            "\u001b[0;31m---------------------------------------------------------------------------\u001b[0m",
+            "\u001b[0;31mNameError\u001b[0m                                 Traceback (most recent call last)",
+            "\u001b[0;32m<ipython-input-19-1dc79b4387b9>\u001b[0m in \u001b[0;36m<module>\u001b[0;34m\u001b[0m\n\u001b[1;32m      9\u001b[0m \u001b[0;34m\u001b[0m\u001b[0m\n\u001b[1;32m     10\u001b[0m \u001b[0;31m# change the income data into 0's and 1's\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n\u001b[0;32m---> 11\u001b[0;31m \u001b[0mdata\u001b[0m\u001b[0;34m[\u001b[0m\u001b[0;34m\"income\"\u001b[0m\u001b[0;34m]\u001b[0m \u001b[0;34m=\u001b[0m \u001b[0mdata\u001b[0m\u001b[0;34m.\u001b[0m\u001b[0mapply\u001b[0m\u001b[0;34m(\u001b[0m\u001b[0;32mlambda\u001b[0m \u001b[0mrow\u001b[0m\u001b[0;34m:\u001b[0m \u001b[0mincomeFixer\u001b[0m\u001b[0;34m(\u001b[0m\u001b[0mrow\u001b[0m\u001b[0;34m[\u001b[0m\u001b[0;34m'income'\u001b[0m\u001b[0;34m]\u001b[0m\u001b[0;34m)\u001b[0m\u001b[0;34m,\u001b[0m \u001b[0maxis\u001b[0m\u001b[0;34m=\u001b[0m\u001b[0;36m1\u001b[0m\u001b[0;34m)\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n\u001b[0m\u001b[1;32m     12\u001b[0m \u001b[0;34m\u001b[0m\u001b[0m\n\u001b[1;32m     13\u001b[0m \u001b[0;31m# get the data we are going to make the model with\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n",
+            "\u001b[0;31mNameError\u001b[0m: name 'data' is not defined"
+          ]
+        }
+      ]
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "# now make data model!\n",
+        "logreg = LogisticRegression(solver='liblinear')\n",
+        "logreg.fit(x_train, y_train)"
+      ],
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/",
+          "height": 201
+        },
+        "id": "kVovxHTqJOzo",
+        "outputId": "0b9da09d-af41-4c17-f825-951f86a84bdd"
+      },
+      "execution_count": null,
+      "outputs": [
+        {
+          "output_type": "error",
+          "ename": "NameError",
+          "evalue": "ignored",
+          "traceback": [
+            "\u001b[0;31m---------------------------------------------------------------------------\u001b[0m",
+            "\u001b[0;31mNameError\u001b[0m                                 Traceback (most recent call last)",
+            "\u001b[0;32m<ipython-input-20-83f7bd412bd9>\u001b[0m in \u001b[0;36m<module>\u001b[0;34m\u001b[0m\n\u001b[1;32m      1\u001b[0m \u001b[0;31m# now make data model!\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n\u001b[1;32m      2\u001b[0m \u001b[0mlogreg\u001b[0m \u001b[0;34m=\u001b[0m \u001b[0mLogisticRegression\u001b[0m\u001b[0;34m(\u001b[0m\u001b[0msolver\u001b[0m\u001b[0;34m=\u001b[0m\u001b[0;34m'liblinear'\u001b[0m\u001b[0;34m)\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n\u001b[0;32m----> 3\u001b[0;31m \u001b[0mlogreg\u001b[0m\u001b[0;34m.\u001b[0m\u001b[0mfit\u001b[0m\u001b[0;34m(\u001b[0m\u001b[0mx_train\u001b[0m\u001b[0;34m,\u001b[0m \u001b[0my_train\u001b[0m\u001b[0;34m)\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n\u001b[0m",
+            "\u001b[0;31mNameError\u001b[0m: name 'x_train' is not defined"
+          ]
+        }
+      ]
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "# now need to test the model's performance\n",
+        "print(logreg.score(x_test, y_test))"
+      ],
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/",
+          "height": 183
+        },
+        "id": "XjOjCE-tJUFW",
+        "outputId": "1f169c42-dcb6-4bd5-be99-5d3383fd9826"
+      },
+      "execution_count": null,
+      "outputs": [
+        {
+          "output_type": "error",
+          "ename": "NameError",
+          "evalue": "ignored",
+          "traceback": [
+            "\u001b[0;31m---------------------------------------------------------------------------\u001b[0m",
+            "\u001b[0;31mNameError\u001b[0m                                 Traceback (most recent call last)",
+            "\u001b[0;32m<ipython-input-21-cd5d22f3f60c>\u001b[0m in \u001b[0;36m<module>\u001b[0;34m\u001b[0m\n\u001b[1;32m      1\u001b[0m \u001b[0;31m# now need to test the model's performance\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n\u001b[0;32m----> 2\u001b[0;31m \u001b[0mprint\u001b[0m\u001b[0;34m(\u001b[0m\u001b[0mlogreg\u001b[0m\u001b[0;34m.\u001b[0m\u001b[0mscore\u001b[0m\u001b[0;34m(\u001b[0m\u001b[0mx_test\u001b[0m\u001b[0;34m,\u001b[0m \u001b[0my_test\u001b[0m\u001b[0;34m)\u001b[0m\u001b[0;34m)\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n\u001b[0m",
+            "\u001b[0;31mNameError\u001b[0m: name 'x_test' is not defined"
+          ]
+        }
+      ]
+    },
+    {
+      "cell_type": "code",
+      "source": [],
+      "metadata": {
+        "id": "aKW0wRnhJYPX"
+      },
+      "execution_count": null,
+      "outputs": []
+    }
+  ]
+}
